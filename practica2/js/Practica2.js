@@ -35,8 +35,8 @@ function init(argument)
     //Camara 
     camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 10000);
     var controls = new THREE.OrbitControls( camera, renderer.domElement );
-    camera.position.set(-50, 150, 700);
-    camera.rotation.x = 0.1;
+    camera.position.set(173, -333, 350);
+    camera.rotation.set(0.83,0.09,-0.09);
     scene.add(camera);
 }
 
@@ -167,26 +167,17 @@ function loadScene()
    
     manoObject.add(pinza1);
 
-    //Pinzas 11
-    var pinzaGeometry11 = new THREE.CubeGeometry(19,4,20,5);
-    var pinza11 = new THREE.Mesh(pinzaGeometry11, material);
-    pinza11.position.z = 227;
-    pinza11.position.x = 40;
-    pinza11.position.y = 15;
-    pinza11.rotation.y = PI/2;
-   
-    manoObject.add(pinza11);
 
     const geometryPinza = new THREE.Geometry();
     geometryPinza.vertices.push(
-      new THREE.Vector3(-50, -100,  100),  // 0
-      new THREE.Vector3( 50, -100,  100),  // 1
-      new THREE.Vector3(-100,  100,  100),  // 2
-      new THREE.Vector3( 100,  100,  100),  // 3
-      new THREE.Vector3(-100, -100, -100),  // 4
-      new THREE.Vector3( 100, -100, -100),  // 5
-      new THREE.Vector3(-100,  100, -100),  // 6
-      new THREE.Vector3( 100,  100, -100),  // 7
+      new THREE.Vector3(-8, -2,  10),  // 0
+      new THREE.Vector3( 8, -1,  3),  // 1
+      new THREE.Vector3(-8,  2,  10),  // 2
+      new THREE.Vector3( 8,  1,  3),  // 3
+      new THREE.Vector3(-8, -2, -9),  // 4
+      new THREE.Vector3( 8, -1, -9),  // 5
+      new THREE.Vector3(-8,  2, -9),  // 6
+      new THREE.Vector3( 8,  1, -9),  // 7
     );
 
     geometryPinza.faces.push(
@@ -210,9 +201,21 @@ function loadScene()
         new THREE.Face3(4, 5, 1),
       );
     
-    const cube = new THREE.Mesh(geometryPinza, material);
-    cube.position.y = 300
-    scene.add(cube);
+    const pinza11 = new THREE.Mesh(geometryPinza, material);
+    scene.add(pinza11);
+
+    pinza11.position.z = 227;
+    pinza11.position.x = 38;
+    pinza11.position.y = 16;
+
+    const pinza22 = new THREE.Mesh(geometryPinza, material);
+    scene.add(pinza22);
+
+    pinza22.position.z = 227;
+    pinza22.position.x = 38;
+    pinza22.position.y = -14;
+
+   
 
     //Pinzas 
     var pinzaGeometry2 = new THREE.CubeGeometry(19,4,20,5);
@@ -240,6 +243,8 @@ function loadScene()
 function update()
 {
    // controls.update();
+   console.log(camera.position);
+   console.log(camera.rotation);
 }
 
 function render()
