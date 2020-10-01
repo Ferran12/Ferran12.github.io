@@ -7,10 +7,12 @@
 // Variables imprescindibles 
 
 
-var renderer, scene, camera;
+var renderer, scene, camera, camOrtografica;
 
 //Variables globales
 var esferacubo, cubo, angulo = 0;
+var r = t = 100;
+var l = b = -r;
 
 //Acciones
 init();
@@ -20,24 +22,74 @@ render();
 function init(argument) 
 {
     //Crear el motor, la escena y la camara 
-
-
     //Motor de render
     renderer = new THREE.WebGLRenderer();
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setClearColor(new THREE.Color(0x000AA));
+    renderer.setClearColor(new THREE.Color(0xFFFFFF));
+    renderer.autoClear = false;
     document.getElementById("container").appendChild(renderer.domElement);
 
     //Escena
     scene = new THREE.Scene();
 
 
-    //Camara 
+    //Camara perspectiva
     camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 10000);
     var controls = new THREE.OrbitControls( camera, renderer.domElement );
-    camera.position.set(173, -333, 350);
-    camera.rotation.set(0.83,0.09,-0.09);
+    camera.position.set(-71, -423, 483);
+    camera.rotation.set(0.78,0.1,-0.09);
+
+    //Camara ortografica
+    var origen = new THREE.Vector3(0,0,0);
+
+    var ar = window.innerWidth / window.innerHeight;
+   
+    if(ar > 1)
+    {
+        //camera = new THREE.PerspectiveCamera(75, ar, 0.1, 100);
+        camOrtografica = new THREE.OrthographicCamera(l*ar, r*ar, t, b, -400, 400);
+    }
+    else
+    {
+        camOrtografica = new THREE.OrthographicCamera(l, r, t/ar, b/ar, -400, 400);
+    }
+
+    camOrtografica.position.set(0,0,300);
+    camOrtografica.lookAt(origen);
+    camOrtografica.up = new THREE.Vector3(0,0,-1);
+   
     scene.add(camera);
+    scene.add(camOrtografica);
+}
+
+function updateAspectRatio()
+{
+    //Indicarle al motor las nuevas dimensiones del canvas
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+    var ar = window.innerWidth / window.innerHeight;
+
+    if(ar > 1)
+    {
+        camera.left = camOrtografica.left = l * ar;
+        camera.right = camOrtografica.right = r * ar;
+        camera.top = camOrtografica.top = t;
+        camera.bottom = camOrtografica.left = b;
+    }
+    else
+    {   
+        camera.left = camOrtografica.left = l;
+        camera.right = camOrtografica.right = r;
+        camera.top = camOrtografica.top = t / ar;
+        camera.bottom = camOrtografica.left = b / ar; 
+    }
+
+    camera.aspect = ar;
+
+    //Se ha variado el volumen de la vista
+
+    camera.updateProjectionMatrix();
+    camOrtografica.updateProjectionMatrix();
 }
 
 function loadScene()
@@ -216,7 +268,6 @@ function loadScene()
     pinza22.position.y = -14;
 
    
-
     //Pinzas 
     var pinzaGeometry2 = new THREE.CubeGeometry(19,4,20,5);
     var pinza2 = new THREE.Mesh(pinzaGeometry1, material);
@@ -232,12 +283,9 @@ function loadScene()
     brazo.add(antebrazo);
 
     base.add(brazo);
-    robot.add( base );
-    scene.add( robot );
-
- 
+    robot.add(base);
+    scene.add(robot);
 }
-
 
 
 function update()
@@ -252,5 +300,19 @@ function render()
     //Dibujar cada frame 
     requestAnimationFrame(render);
     update();
+
+    renderer.clear();
+
+    var size;
+
+    if(window.innerHeight > window.innerWidth)
+        size = window.innerWidth / 2;
+    else
+        size = window.innerHeight / 2;
+
+    renderer.setViewport(0,0, size, size);
+    renderer.render(scene, camOrtografica);
+    
+    renderer.setViewport( 0,0, window.innerWidth, window.innerHeight);
     renderer.render(scene, camera);
 }
