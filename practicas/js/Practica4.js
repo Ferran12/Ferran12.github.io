@@ -53,14 +53,14 @@ function init(argument)
     keyboard.domElement.addEventListener('keydown', function(event){
         if(keyboard.eventMatches(event,'left')) 
         {
-            robot.position.y -= 5;
+            robot.position.y += 5;
         }
     })
 
     keyboard.domElement.addEventListener('keydown', function(event){
         if(keyboard.eventMatches(event,'right')) 
         {
-            robot.position.y += 5;
+            robot.position.y -= 5;
         }
     })
 
@@ -71,6 +71,7 @@ function init(argument)
     //Camara perspectiva
     camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 10000);
     var controls = new THREE.OrbitControls( camera, renderer.domElement );
+    controls.enableKeys = false;
     camera.position.set(-71, -423, 483);
     camera.rotation.set(0.78,0.1,-0.09);
 
