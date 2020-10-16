@@ -10,6 +10,9 @@ var renderer, scene, camera;
 var car;
 var coins = [];
 
+var obstacleHorizontal = [];
+var obstacleVertical = [];
+
 //Variables 
 var world, clock;
 
@@ -21,6 +24,9 @@ var velocityX;
 
 //Acaba el movimiento de la camara
 var finishMove = false;
+
+//Final del juego
+var end = false;
 
 //Elimina la moneda
 var remove = false;
@@ -101,7 +107,83 @@ function initInput(renderer)
     return keyboard;
 }
 
+function generateRandomX()
+{
+    var x = Math.floor(Math.random() * 250);
+    var sign = Math.floor(Math.random() * 2);
 
+    if(sign == 0)
+        x = x * -1;
+
+    return x; 
+}
+
+function loadCoins()
+{
+      //Creamos las monedas
+      for(var i = 0; i < 25; i++)
+      {
+          var x = generateRandomX();
+          
+          var coin = createCoin(new CANNON.Vec3(x,-1000 + (i * 4000),60),carMaterial);
+  
+          if(i == 0)
+              firstCoin = coin.body.id;
+  
+          scene.add(coin.visual);
+          world.addBody(coin.body);
+  
+          coin.body.addEventListener("collide",function(e)
+          {
+              bodyRemove = e.target;
+              remove = true;
+             
+              //WARNING!!!!
+              scene.remove(coins[e.target.id - firstCoin].visual);
+          });
+  
+          coins.push(coin);
+      }
+}
+
+function loadObstacles()
+{
+    for(var i = 0; i < 25; i++)
+    {
+        var x = generateRandomX();
+        var obstacle;
+        obstacle = createObstacle(new CANNON.Vec3(x,-2000 + (i * 8000),95), carMaterial,true);
+
+        scene.add(obstacle.visual);
+        world.addBody(obstacle.body);
+
+        obstacle.body.addEventListener("collide",function(e)
+        {
+           end = true;
+           car.body.velocity.x = 0;
+           car.body.velocity.y = 0;
+        });
+
+        obstacleHorizontal.push(obstacle);
+    }  
+
+    for(var i = 0; i < 25; i++)
+    {
+            var x = generateRandomX();
+            var obstacle;
+            obstacle = createObstacle(new CANNON.Vec3(x,(i * 8000),95), carMaterial, false);
+    
+            scene.add(obstacle.visual);
+            world.addBody(obstacle.body);
+    
+            obstacle.body.addEventListener("collide",function(e)
+            {
+               end = true;
+               car.body.velocity.x = 0;
+               car.body.velocity.y = 0;
+            });
+    }  
+}
 
 function loadScene()
 {
@@ -113,37 +195,8 @@ function loadScene()
     initZ = car.visual.position.z;
     scene.add(car.visual);
     world.addBody(car.body);
-
-    //Creamos las monedas
-    for(var i = 0; i < 25; i++)
-    {
-        var x = Math.floor(Math.random() * 250);
-        var sign = Math.floor(Math.random() * 2);
-
-        if(sign == 0)
-            x = x * -1;
-        
-        var coin = createCoin(new CANNON.Vec3(x,-1000 + (i * 4000),60),carMaterial);
-
-        if(i == 0)
-            firstCoin = coin.body.id;
-
-        scene.add(coin.visual);
-        world.addBody(coin.body);
-
-        coin.body.addEventListener("collide",function(e)
-        {
-            bodyRemove = e.target;
-            remove = true;
-            velocityX = car.body.velocity.x;
-            initX = car.body.position.x;
-            initY = car.body.position.y;
-            //WARNING!!!!
-            scene.remove(coins[e.target.id - firstCoin].visual);
-        });
-
-        coins.push(coin);
-    }
+    loadCoins();
+    loadObstacles();
 }
 
 
@@ -158,13 +211,66 @@ function update()
     }
     else
     {
-            camera.position.y = car.body.position.y - offset;
-            car.body.velocity.y = 1500;
+            if(!end)
+            {
+                camera.position.y = car.body.position.y - offset;
+                car.body.velocity.y = 1500;
+            }
+            else
+            {
+                car.body.velocity.x = 0;
+                car.body.velocity.y = 0;
+            }     
     }
 
     camera, renderer = updateAspectRatio(camera,renderer);
 
     updatePhysics();
+}
+
+function updateCoins()
+{
+       //Rotamos las monedas
+       for(var i = 0; i < 25; i++)
+       {
+           coins[i].visual.rotation.x += 0.05;
+           coins[i].visual.rotation.y += 0.05;
+       }
+}
+
+function updateCar()
+{
+    car.body.position.z = initZ;
+
+    //Actualizamos la posicion del coche
+    car.visual.position.copy(car.body.position);
+
+    //Frena el coche
+    if(car.body.velocity.x >= -10 && car.body.velocity.x <= 10)
+        car.body.velocity.x = 0;
+    else if(car.body.velocity.x >= 10)
+        car.body.velocity.x -= 2;
+    else if(car.body.velocity.x <= -10)
+        car.body.velocity.x += 2; 
+}
+
+function updateObstacles()
+{
+    for(var i = 0; i < 25; i++)
+    {
+            if(obstacleHorizontal[i].body.position.x < -250)
+                obstacleHorizontal[i].left = false;
+            else if(obstacleHorizontal[i].body.position.x > 250)
+                obstacleHorizontal[i].left = true;
+
+            if(obstacleHorizontal[i].left )
+                obstacleHorizontal[i].body.position.x -= 5 + obstacleHorizontal[i].vel;
+            else
+                obstacleHorizontal[i].body.position.x += 5  + obstacleHorizontal[i].vel;
+  
+            obstacleHorizontal[i].visual.position.copy(obstacleHorizontal[i].body.position);
+            obstacleHorizontal[i].visual.position.y += 150;
+    }   
 }
 
 function updatePhysics()
@@ -176,33 +282,14 @@ function updatePhysics()
     {
         world.remove(bodyRemove);
         remove = false;
-        car.body.velocity.x = velocityX;
-        car.body.position.x = initX;
-        car.body.position.y = initY;
     }
 
 
-    car.body.position.z = initZ;
+    updateCoins();
+    updateCar();
 
-    //Actualizamos la posicion del coche
-    car.visual.position.copy(car.body.position);
-
-
-
-    //Rotamos las monedas
-    for(var i = 0; i < 25; i++)
-    {
-        coins[i].visual.rotation.x += 0.05;
-        coins[i].visual.rotation.y += 0.05;
-    }
-    
-    //Frena el coche
-    if(car.body.velocity.x >= -10 && car.body.velocity.x <= 10)
-        car.body.velocity.x = 0;
-    else if(car.body.velocity.x >= 10)
-        car.body.velocity.x -= 2;
-    else if(car.body.velocity.x <= -10)
-        car.body.velocity.x += 2; 
+    if(!end)
+        updateObstacles();
 }
 
 function render()

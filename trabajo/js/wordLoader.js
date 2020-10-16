@@ -70,6 +70,7 @@ function createCoin(posicion,material)
 	var body = new CANNON.Body( {mass: 0, material: material} );
 	body.addShape( new CANNON.Sphere(50));
     body.position.copy( posicion );
+    body.collisionResponse = false;
     
     var materialMesh = new THREE.MeshBasicMaterial({color: 'red', wireframe:true});
 
@@ -82,12 +83,48 @@ function createCoin(posicion,material)
     return coin;
 }
 
+function createObstacle(posicion,material,move)
+{
+    var body = new CANNON.Body( {mass:0, material:groundMaterial} );
+
+    if(move)
+        body.addShape( new CANNON.Box(new CANNON.Vec3(40,1,70)) );
+    else
+        body.addShape( new CANNON.Box(new CANNON.Vec3(70,1,70)) );
+
+    body.position.copy(posicion);
+
+    //Material
+    var material = new THREE.MeshBasicMaterial({color: 'red', wireframe:true});
+    var geometry;
+
+    if(move)
+        geometry = new THREE.CubeGeometry( 200, 200, 300, 32 );
+    else
+        geometry = new THREE.CubeGeometry( 300, 200, 200, 32 );
+
+    var mesh = new THREE.Mesh( geometry, material );
+    mesh.position.copy(body.position);
+    body.position.y -= 100;
+    mesh.material.side = THREE.DoubleSide;
+
+    var left = false;
+
+    if(Math.floor(Math.random() * 2) == 0)
+        left = true;
+
+    var velocity = Math.floor(Math.random() * 3);
+
+    var obstacle = {visual: mesh, body: body, left: left, vel: velocity};
+    return obstacle;
+}
+
 function createCar(posicion, carMaterial)
 {
     var masa = 10;
 
     var body = new CANNON.Body({mass: masa, material: carMaterial});
-    body.addShape(new CANNON.Box(new CANNON.Vec3(125,125,75)));
+    body.addShape(new CANNON.Box(new CANNON.Vec3(75,125,75)));
     body.position.copy(posicion);
   
     //Material
