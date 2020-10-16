@@ -90,6 +90,8 @@ function initPhysicWorld()
     world.addBody( rightWall );
 }
 
+
+
 /**
  * Inicializa la escena visual
  */
