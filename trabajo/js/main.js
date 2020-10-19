@@ -8,6 +8,7 @@
 var renderer, scene, camera;
 
 var car;
+var ship;
 var coins = [];
 
 var obstacleHorizontal = [];
@@ -188,7 +189,6 @@ function loadObstacles()
 function loadScene()
 {
     road = createRoad(groundMaterial,world,scene);
-    scene.add(road);
 
     //Se añade el coche    
     car = createCar(new CANNON.Vec3(0,-4500,40), carMaterial);
@@ -197,12 +197,21 @@ function loadScene()
     world.addBody(car.body);
     loadCoins();
     loadObstacles();
+
+    var loader = new THREE.ObjectLoader();
+
+    loader.load( 'models/nave/nave.json', function ( object ) {
+        object.position.copy(car.body.position);
+        scene.add(object);
+    } );
 }
 
 
 function update()
 {
     var targetPosition = new THREE.Vector3(0,-5000, 150 );
+
+   // ship.position.copy(car.body.position);
 
     if(!finishMove)
     {
