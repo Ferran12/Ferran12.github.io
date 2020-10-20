@@ -51,8 +51,6 @@ var firstCoin;
 var offset;
 
 //Acciones
-
-document.getElementById('musica').play();
 init();
 loadScene();
 render();
@@ -66,19 +64,13 @@ function startVariable()
     counter = 0;
     die = false;
 
-    delete ship;
     ship = null;
-
-    delete coins;
     coins = [];
 
     inclinarIzq = false;
     inclinarDer = false;
 
-    delete obstacleHorizontal;
     obstacleHorizontal = [];
-
-    delete obstacleVertical;
     obstacleVertical = [];
 
 
@@ -159,27 +151,20 @@ function updateText()
 function init(argument)
 {
         //Crear el motor, la escena y la camara
-        console.log(die);
 
         if(!die)
         {
           renderer = new THREE.WebGLRenderer();
           renderer.setSize(window.innerWidth, window.innerHeight);
           //renderer.setClearColor(new THREE.Color(0xFFFFFF));
-          //renderer.autoClear = false;
+          renderer.autoClear = false;
           document.getElementById("container").appendChild(renderer.domElement);
           renderer.domElement.setAttribute("tabIndex","0");
           renderer.domElement.focus();
-          initPhysicWorld();
+         
         }
 
-        if(die)
-        {
-            while(scene.children.length > 0){ 
-                scene.remove(scene.children[0]); 
-            }
-        }
-
+        initPhysicWorld();
         startVariable();
 
         scene = new THREE.Scene();
@@ -198,7 +183,6 @@ function init(argument)
 
             if(!start || die)
             {
-                console.log(time- performance.now())
                 if((die &&  performance.now() - time > 900) || (!start && !die))
                 {
                     startGame();
@@ -282,7 +266,7 @@ function loadCoins()
 
 function loadObstacles()
 {
-    for(var i = 0; i < 12; i++)
+    for(var i = 0; i < 25; i++)
     {
         var x = generateRandomX();
         var obstacle;
@@ -303,7 +287,7 @@ function loadObstacles()
         obstacleHorizontal.push(obstacle);
     }
 
-    for(var i = 0; i < 12; i++)
+    for(var i = 0; i < 25; i++)
     {
             var x = generateRandomX();
             var obstacle;
@@ -340,6 +324,7 @@ function loadScene()
         object.position.copy(car.body.position);
         object.scale.set(50,50,50);
         car.visual = object;
+        console.log(object.children[0]);
         scene.add(car.visual);
     } );
 
