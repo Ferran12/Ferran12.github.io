@@ -183,7 +183,7 @@ function init(argument)
 
             if(!start || die)
             {
-                if((die &&  performance.now() - time > 900) || (!start && !die))
+                if((die &&  performance.now() - time > 500) || (!start && !die))
                 {
                     startGame();
                     die = false;
@@ -324,7 +324,6 @@ function loadScene()
         object.position.copy(car.body.position);
         object.scale.set(50,50,50);
         car.visual = object;
-        console.log(object.children[0]);
         scene.add(car.visual);
     } );
 

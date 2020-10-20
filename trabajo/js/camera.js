@@ -1,7 +1,7 @@
 function initCamera()
 {
      //Camara perspectiva
-     var camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 1000000);
+     var camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 100000);
    
      //camera.position.set(0, -2890, 150);
      camera.position.set(0, -6100, 500);
