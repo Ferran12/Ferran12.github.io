@@ -1,11 +1,11 @@
 function initCamera()
 {
      //Camara perspectiva
-     var camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 10000);
+     var camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 1, 1000000);
      var controls = new THREE.OrbitControls( camera, renderer.domElement );
      controls.enableKeys = false;
      //camera.position.set(0, -2890, 150);
-     camera.position.set(0, -6100, 400);
+     camera.position.set(0, -6100, 500);
      camera.rotation.set(1.41,0,0);
 
      return camera;

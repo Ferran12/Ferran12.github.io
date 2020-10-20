@@ -6,15 +6,26 @@
 
 //Variables render
 var renderer, scene, camera;
+var text;
+var stars = 0;
+var win = false;
+
+var start = false;
+var again = false;
+var die = false;
+var time = 0;
 
 var car;
-var ship;
+var ship = null;
+var ship_id;
 var coins = [];
+
+var inclinarIzq = false, inclinarDer = false;
 
 var obstacleHorizontal = [];
 var obstacleVertical = [];
 
-//Variables 
+//Variables
 var world, clock;
 
 //Materiales
@@ -29,6 +40,8 @@ var finishMove = false;
 //Final del juego
 var end = false;
 
+var light;
+
 //Elimina la moneda
 var remove = false;
 var bodyRemove;
@@ -38,9 +51,40 @@ var firstCoin;
 var offset;
 
 //Acciones
+
+document.getElementById('musica').play();
 init();
 loadScene();
 render();
+
+function startVariable()
+{
+    win = false;
+    start = false;
+    stars = 0;
+    again = false;
+    counter = 0;
+    die = false;
+
+    ship = null;
+    coins = [];
+
+    inclinarIzq = false;
+    inclinarDer = false;
+
+    obstacleHorizontal = [];
+    obstacleVertical = [];
+
+
+    //Acaba el movimiento de la camara
+    finishMove = false;
+
+    //Final del juego
+    end = false;
+
+    //Elimina la moneda
+    remove = false;
+}
 
 function initPhysicWorld()
 {
@@ -57,51 +101,133 @@ function initPhysicWorld()
     world.defaultContactMaterial.restitution = 0.0;
 
     // Reloj
-	clock = new THREE.Clock();
-	clock.start();
+    clock = new THREE.Clock();
+    clock.start();
 }
 
 
-function init(argument) 
+function startGame()
 {
-    //Crear el motor, la escena y la camara 
-    renderer = new THREE.WebGLRenderer();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setClearColor(new THREE.Color(0xFFFFFF));
-    renderer.autoClear = false;
-    document.getElementById("container").appendChild(renderer.domElement);
-    renderer.domElement.setAttribute("tabIndex","0");
-    renderer.domElement.focus();
-    
-    initPhysicWorld();
-  
-    //Escena
-    scene = new THREE.Scene();
-    camera = initCamera();
-    var keyboard = initInput(renderer);
-
-    var ar = window.innerWidth / window.innerHeight;
-   
-    scene.add(camera);
+    start = true;
+    var texture = new THREE.TextureLoader().load( 'textures/sky.jpg' );
+    scene.background = texture;
+    camera.position.set(0, -6500, 480);
+    addText();
 }
+
+function dieScene()
+{
+    var texture = new THREE.TextureLoader().load( 'textures/died.png' );
+    scene.background = texture;
+}
+
+function endScene()
+{
+    var texture = new THREE.TextureLoader().load( 'textures/end.png' );
+    scene.background = texture;
+}
+
+function addText()
+{
+  text = document.getElementById('text');
+  text.style.position = 'absolute';
+  text.style.width = 100 + "%";
+  text.style.zIndex= 100;
+  text.style.height = 100;
+  text.style.color = "white";
+  text.style.fontFamily = "Impact";
+  text.style.fontWeight = "bold";
+  text.style.fontSize = "xx-large";
+  text.style.fontStyle = "italic";
+  text.innerHTML = "SCORE: 0";
+  text.style.top = 40 + 'px';
+  text.style.left = 40 + 'px';
+}
+
+function updateText()
+{
+  text = document.getElementById('text');
+  text.innerHTML = "SCORE: " + stars;
+}
+
+function init(argument)
+{
+        //Crear el motor, la escena y la camara
+        console.log(die);
+
+        if(!die)
+        {
+          renderer = new THREE.WebGLRenderer();
+          renderer.setSize(window.innerWidth, window.innerHeight);
+          //renderer.setClearColor(new THREE.Color(0xFFFFFF));
+          //renderer.autoClear = false;
+          document.getElementById("container").appendChild(renderer.domElement);
+          renderer.domElement.setAttribute("tabIndex","0");
+          renderer.domElement.focus();
+          initPhysicWorld();
+        }
+
+        if(die)
+        {
+            while(scene.children.length > 0){ 
+                scene.remove(scene.children[0]); 
+            }
+        }
+
+        startVariable();
+
+        scene = new THREE.Scene();
+        camera = initCamera();
+        var keyboard = initInput(renderer);
+
+        var ar = window.innerWidth / window.innerHeight;
+
+        light = new THREE.AmbientLight( 0x404040, 4, 100000000);
+        light.position.copy(camera.position);
+        camera.add( light );
+
+        scene.add(camera);
+
+        keyboard.domElement.addEventListener('keydown', function(event){
+
+            if(!start || die)
+            {
+                console.log(time- performance.now())
+                if((die &&  performance.now() - time > 900) || (!start && !die))
+                {
+                    startGame();
+                    die = false;
+                }
+            }
+        })
+}
+
 
 function initInput(renderer)
 {
     var keyboard = new THREEx.KeyboardState(renderer.domElement);
 
     keyboard.domElement.addEventListener('keydown', function(event){
-        if(keyboard.eventMatches(event,'d')) 
+        if(keyboard.eventMatches(event,'d'))
         {
             if(finishMove)
+            {
                 car.body.velocity.x = 250;
+                inclinarDer = true;
+                inclinarIzq = false;
+            }
         }
     })
-    
+
     keyboard.domElement.addEventListener('keydown', function(event){
-        if(keyboard.eventMatches(event,'a')) 
+        if(keyboard.eventMatches(event,'a'))
         {
             if(finishMove)
+            {
+                inclinarIzq = true;
+                inclinarDer = false;
                 car.body.velocity.x = -250;
+            }
         }
     })
 
@@ -116,7 +242,7 @@ function generateRandomX()
     if(sign == 0)
         x = x * -1;
 
-    return x; 
+    return x;
 }
 
 function loadCoins()
@@ -125,24 +251,25 @@ function loadCoins()
       for(var i = 0; i < 25; i++)
       {
           var x = generateRandomX();
-          
+
           var coin = createCoin(new CANNON.Vec3(x,-1000 + (i * 4000),60),carMaterial);
-  
+
           if(i == 0)
               firstCoin = coin.body.id;
-  
+
           scene.add(coin.visual);
           world.addBody(coin.body);
-  
+
           coin.body.addEventListener("collide",function(e)
           {
               bodyRemove = e.target;
               remove = true;
-             
+              stars += 1;
+              updateText();
               //WARNING!!!!
               scene.remove(coins[e.target.id - firstCoin].visual);
           });
-  
+
           coins.push(coin);
       }
 }
@@ -163,78 +290,113 @@ function loadObstacles()
            end = true;
            car.body.velocity.x = 0;
            car.body.velocity.y = 0;
+           again = true;
+           die = true;
         });
 
         obstacleHorizontal.push(obstacle);
-    }  
+    }
 
     for(var i = 0; i < 25; i++)
     {
             var x = generateRandomX();
             var obstacle;
             obstacle = createObstacle(new CANNON.Vec3(x,(i * 8000),95), carMaterial, false);
-    
+
             scene.add(obstacle.visual);
             world.addBody(obstacle.body);
-    
+
             obstacle.body.addEventListener("collide",function(e)
             {
                end = true;
                car.body.velocity.x = 0;
                car.body.velocity.y = 0;
+               again = true;
+               die = true;
             });
-    }  
+    }
 }
 
 function loadScene()
 {
     road = createRoad(groundMaterial,world,scene);
 
-    //Se añade el coche    
-    car = createCar(new CANNON.Vec3(0,-4500,40), carMaterial);
-    initZ = car.visual.position.z;
-    scene.add(car.visual);
+    //Se añade el coche
+    car = createCar(new CANNON.Vec3(0,-4500,70), carMaterial,scene);
+    initZ = car.body.position.z;
     world.addBody(car.body);
     loadCoins();
     loadObstacles();
 
     var loader = new THREE.ObjectLoader();
 
-    loader.load( 'models/nave/nave.json', function ( object ) {
+    loader.load('models/nave/nave.json', function ( object ) {
         object.position.copy(car.body.position);
-        scene.add(object);
+        object.scale.set(50,50,50);
+        car.visual = object;
+        scene.add(car.visual);
     } );
-}
 
+    var texture = new THREE.TextureLoader().load( 'textures/start.png' );
+    camera.position.set(-100000,-1000000,-10000);
+    scene.background = texture;
+}
 
 function update()
 {
-    var targetPosition = new THREE.Vector3(0,-5000, 150 );
-
-   // ship.position.copy(car.body.position);
-
-    if(!finishMove)
+    if(again)
     {
-        finishMove = initialMoveCamera(camera.position, targetPosition, 12);
-        offset = car.body.position.y - camera.position.y;
+        var win_aux = win;
+        init();
+        die = true;
+        again = false;
+        loadScene();
+
+        if(win_aux)
+            endScene();
+        else
+            dieScene();
+
+        time = performance.now();
+        text = document.getElementById('text');
+        text.innerHTML = "";
     }
-    else
+    else if(car.body.position.y > 1000)
     {
-            if(!end)
-            {
-                camera.position.y = car.body.position.y - offset;
-                car.body.velocity.y = 1500;
-            }
-            else
-            {
-                car.body.velocity.x = 0;
-                car.body.velocity.y = 0;
-            }     
+        end = true;
+        car.body.velocity.x = 0;
+        car.body.velocity.y = 0;
+        again = true;
+        die = true;
+        win = true;
     }
+    else if(start)
+    {
+        var targetPosition = new THREE.Vector3(0,-5000, 150 );
+        light.position.copy(car.body.position);
 
-    camera, renderer = updateAspectRatio(camera,renderer);
+        if(!finishMove)
+        {
+            finishMove = initialMoveCamera(camera.position, targetPosition, 12);
+            offset = car.body.position.y - camera.position.y;
+        }
+        else
+        {
+                if(!end)
+                {
+                    camera.position.y = car.body.position.y - offset;
+                    car.body.velocity.y = 1600;
+                }
+                else
+                {
+                    car.body.velocity.x = 0;
+                    car.body.velocity.y = 0;
+                }
+        }
 
-    updatePhysics();
+        camera, renderer = updateAspectRatio(camera,renderer);
+        updatePhysics();
+    }
 }
 
 function updateCoins()
@@ -249,10 +411,25 @@ function updateCoins()
 
 function updateCar()
 {
-    car.body.position.z = initZ;
+    if(!end)
+    {
+        if(inclinarIzq)
+        {
+            if(car.visual.rotation.y < -(8 * (Math.PI/180)))
+                inclinarIzq = false;
+            else
+                car.visual.rotation.y -= (1 * (Math.PI/180));
+        }
+        else if(inclinarDer)
+        {
+            if(car.visual.rotation.y > (8 * (Math.PI/180)))
+                inclinarDer = false;
+            else
+                car.visual.rotation.y += (1 * (Math.PI/180));
+        }
+    }
 
-    //Actualizamos la posicion del coche
-    car.visual.position.copy(car.body.position);
+    car.body.position.z = initZ;
 
     //Frena el coche
     if(car.body.velocity.x >= -10 && car.body.velocity.x <= 10)
@@ -260,7 +437,7 @@ function updateCar()
     else if(car.body.velocity.x >= 10)
         car.body.velocity.x -= 2;
     else if(car.body.velocity.x <= -10)
-        car.body.velocity.x += 2; 
+        car.body.velocity.x += 2;
 }
 
 function updateObstacles()
@@ -276,23 +453,27 @@ function updateObstacles()
                 obstacleHorizontal[i].body.position.x -= 5 + obstacleHorizontal[i].vel;
             else
                 obstacleHorizontal[i].body.position.x += 5  + obstacleHorizontal[i].vel;
-  
+
             obstacleHorizontal[i].visual.position.copy(obstacleHorizontal[i].body.position);
             obstacleHorizontal[i].visual.position.y += 150;
-    }   
+    }
 }
 
 function updatePhysics()
 {
-    var segundos = clock.getDelta();	
-    world.step( segundos );			
-    
+    if(car.visual != null)
+    {
+        car.visual.position.copy(car.body.position);
+    }
+
+    var segundos = clock.getDelta();
+    world.step( segundos );
+
     if(remove)
     {
         world.remove(bodyRemove);
         remove = false;
     }
-
 
     updateCoins();
     updateCar();

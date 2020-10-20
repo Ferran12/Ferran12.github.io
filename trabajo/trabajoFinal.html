@@ -11,7 +11,6 @@
         </style>
         <script src="lib/three.min_r96.js"></script>
          <script src="lib/OrbitControls.js"></script>
-        <script src="lib/tween_18.js"></script>
         <script src="lib/dat.gui.min.js"></script>
         <script src="lib/stats.min.js"></script>
         <script src="lib/Coordinates.js"></script>
@@ -19,12 +18,18 @@
          <script src="lib/threex.domevents.js"></script>
          <script src="lib/threex.keyboardstate.js"></script>
     </head>
- 
+
 
     <body>
 
         <!--Contenedor del canvas-->
         <div id="container"></div>
+
+        <div id="text"></div>
+
+      <audio id="musica" hidden="true" src="sound/music.mp3" controls autoplay loop>
+      Your browser does not support the audio element.
+      </audio>
 
         <!--Bibliotecas sobre Threejs-->
         <script src="js/physics.js"></script>
