@@ -66,13 +66,19 @@ function startVariable()
     counter = 0;
     die = false;
 
+    delete ship;
     ship = null;
+
+    delete coins;
     coins = [];
 
     inclinarIzq = false;
     inclinarDer = false;
 
+    delete obstacleHorizontal;
     obstacleHorizontal = [];
+
+    delete obstacleVertical;
     obstacleVertical = [];
 
 
@@ -276,7 +282,7 @@ function loadCoins()
 
 function loadObstacles()
 {
-    for(var i = 0; i < 25; i++)
+    for(var i = 0; i < 12; i++)
     {
         var x = generateRandomX();
         var obstacle;
@@ -297,7 +303,7 @@ function loadObstacles()
         obstacleHorizontal.push(obstacle);
     }
 
-    for(var i = 0; i < 25; i++)
+    for(var i = 0; i < 12; i++)
     {
             var x = generateRandomX();
             var obstacle;
@@ -361,7 +367,7 @@ function update()
         text = document.getElementById('text');
         text.innerHTML = "";
     }
-    else if(car.body.position.y > 1000)
+    else if(car.body.position.y > 99000)
     {
         end = true;
         car.body.velocity.x = 0;
