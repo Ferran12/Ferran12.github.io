@@ -140,12 +140,10 @@ function addLight()
 	scene.add( luzPuntual );
 
     var luzFocal = new THREE.SpotLight(0xFFFFFF,1.0);
-    luzFocal.position.set(-100,50,400);
+    luzFocal.position.set(0,50,400);
     luzFocal.target.position.set(0,0,0);
 	luzFocal.penumbra = 0.2;
     luzFocal.castShadow = true;
-    luzFocal.shadowCameraFar = 1000;
-    luzFocal.shadowCameraNear = 1;
 	scene.add(luzFocal);
 }
 
