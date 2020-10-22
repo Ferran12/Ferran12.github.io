@@ -55,6 +55,7 @@ var sound,listener;
 
 //Acciones
 init();
+startMusic();
 loadScene();
 render();
 
@@ -151,6 +152,23 @@ function updateText()
   text.innerHTML = "SCORE: " + stars;
 }
 
+function startMusic()
+{
+  listener = new THREE.AudioListener();
+
+  // create a global audio source
+  sound = new THREE.Audio( listener );
+
+  // load a sound and set it as the Audio object's buffer
+  var audioLoader = new THREE.AudioLoader();
+  audioLoader.load( 'sound/music.mp3', function( buffer ) {
+      sound.setBuffer( buffer );
+      sound.setLoop(true);
+      sound.setVolume(0.9);
+      sound.play();
+  });
+}
+
 function init(argument)
 {
         //Crear el motor, la escena y la camara
@@ -165,27 +183,6 @@ function init(argument)
           renderer.domElement.setAttribute("tabIndex","0");
           renderer.domElement.focus();
           renderer.shadowMap.enabled = true;  
-
-          listener = new THREE.AudioListener();
-          var audioLoader = new THREE.AudioLoader();
-
-          // create a global audio source
-          sound = new THREE.Audio( listener );
-
-        // load a sound and set it as the Audio object's buffer
-        var audioLoader = new THREE.AudioLoader();
-        audioLoader.load( 'sound/music.mp3', function( buffer ) {
-            sound.setBuffer( buffer );
-            sound.setLoop(true);
-            sound.setVolume(0.9);
-            sound.play();
-        });
-
-        document.documentElement.addEventListener(
-            "keydown", function(){
-                if(listener.context.state !== 'running')
-                    listener.context.resume()
-            })
         }
 
         initPhysicWorld();  
