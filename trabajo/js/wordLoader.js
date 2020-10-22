@@ -33,19 +33,18 @@ function createRoad(groundMaterial, world, scene)
         * VISUAL
         */
        // Material
-       //var material = new THREE.MeshBasicMaterial({color: 'red', wireframe:true});
 
        var texture = new THREE.TextureLoader().load( 'textures/hexagon.png' );
        texture.wrapS = THREE.RepeatWrapping;
        texture.wrapT = THREE.RepeatWrapping;
        texture.repeat.set( 4,500 );
        // immediately use the texture for material creation
-       var material = new THREE.MeshBasicMaterial( { map: texture } );
+       var material = new THREE.MeshPhongMaterial( { map: texture} );
 
        var textureWall = new THREE.TextureLoader().load( 'textures/floor4.jpg');
 
       // immediately use the texture for material creation
-      var materialWall = new THREE.MeshBasicMaterial( { map: textureWall } );
+      var materialWall = new THREE.MeshPhongMaterial( { map: textureWall } );
 
 
        // Suelo
@@ -53,6 +52,8 @@ function createRoad(groundMaterial, world, scene)
        {
         var geometry = new THREE.PlaneGeometry( 1200, 500000, 100, 1000 );
         var floor = new THREE.Mesh( geometry, material );
+        floor.castShadow = true;
+        floor.receiveShadow = true;
         floor.position += i * 9000;
         scene.add(floor);
        }
@@ -61,6 +62,8 @@ function createRoad(groundMaterial, world, scene)
        //Pared derecha
        var geometry = new THREE.CubeGeometry( 1000000, 100, 30, 1000 );
        var wallRight = new THREE.Mesh( geometry, materialWall );
+       wallRight.castShadow = true;
+       wallRight.receiveShadow = true;
        wallRight.rotation.x = 90 * (Math.PI / 180);
        wallRight.rotation.y = 90 * (Math.PI / 180);
        wallRight.position.z = 50;
@@ -71,6 +74,8 @@ function createRoad(groundMaterial, world, scene)
        //Pared izquierda
        var geometry = new THREE.CubeGeometry( 1000000, 100, 30, 1000 );
        var wallLeft = new THREE.Mesh( geometry, materialWall );
+       wallLeft.castShadow = true;
+       wallLeft.receiveShadow = true;
        wallLeft.rotation.x = 90 * (Math.PI / 180);
        wallLeft.rotation.y = 90 * (Math.PI / 180);
        wallLeft.position.z = 50;
@@ -91,12 +96,14 @@ function addBeaty(scene)
     textureWall.repeat.set( 10,4 );
 
     // immediately use the texture for material creation
-    var materialWall = new THREE.MeshBasicMaterial( { map: textureWall } );
+    var materialWall = new THREE.MeshPhongMaterial( { map: textureWall } );
 
     for(var i = 0; i < 30; i++)
     {
         var geometry = new THREE.CylinderGeometry( 40, 50, 10000, 32 );
         var wallLeft = new THREE.Mesh( geometry, materialWall );
+        wallLeft.castShadow = true;
+        wallLeft.receiveShadow = true;
         wallLeft.position.x = -500;
         wallLeft.position.y = -1000 + (i *8000);
         wallLeft.position.z = 80;
@@ -104,6 +111,8 @@ function addBeaty(scene)
 
         var geometry = new THREE.CylinderGeometry( 40, 50, 10000, 32 );
         var wallRight = new THREE.Mesh( geometry, materialWall );
+        wallRight.castShadow = true;
+        wallRight.receiveShadow = true;
         wallRight.position.x = 500;
         wallRight.position.y = -1000 + (i *8000);
         wallRight.position.z = 80;
@@ -119,20 +128,20 @@ function createCoin(posicion,material)
     body.position.copy( posicion );
     body.collisionResponse = false;
 
-    var materialMesh = new THREE.MeshBasicMaterial({color: 'red', wireframe:true});
+    var materialMesh = new THREE.MeshPhongMaterial({color: 'red', wireframe:true});
 
     var texture = new THREE.TextureLoader().load( 'textures/ball.jpg' );
     // immediately use the texture for material creation
-    var material = new THREE.MeshBasicMaterial( { map: texture } );
+    var material = new THREE.MeshPhongMaterial( { map: texture } );
 
     var geometry = new THREE.SphereGeometry( 50 );
     var coinMesh = new THREE.Mesh( geometry, material );
+    coinMesh.castShadow = true;
+    coinMesh.receiveShadow = true;
     coinMesh.position.copy( body.position );
     var coin = {visual: coinMesh, body: body};
 
     return coin;
-
-
 }
 
 function createObstacle(posicion,material,move)
@@ -156,10 +165,12 @@ function createObstacle(posicion,material,move)
 
     var texture = new THREE.TextureLoader().load( 'textures/floor4.jpg' );
     // immediately use the texture for material creation
-    var material = new THREE.MeshBasicMaterial( { map: texture } );
+    var material = new THREE.MeshLambertMaterial( { map: texture } );
 
 
     var mesh = new THREE.Mesh( geometry, material );
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
     mesh.position.copy(body.position);
     body.position.y -= 100;
     body.position.x -= 25;
@@ -185,7 +196,7 @@ function createCar(posicion, carMaterial)
     body.position.copy(posicion);
 
     //Material
-    var material = new THREE.MeshBasicMaterial({color: 'red', wireframe:true});
+    var material = new THREE.MeshPhongMaterial({color: 'red', wireframe:true});
     //Objeto 3D que contiene el coche
     //Pared izquierda
 

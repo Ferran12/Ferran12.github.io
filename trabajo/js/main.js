@@ -6,6 +6,7 @@
 
 //Variables render
 var renderer, scene, camera;
+var luzFocal;
 var text;
 var stars = 0;
 var win = false;
@@ -49,6 +50,8 @@ var firstCoin;
 
 //Offset de la camara
 var offset;
+
+var sound,listener;
 
 //Acciones
 init();
@@ -129,16 +132,16 @@ function addText()
 {
   text = document.getElementById('text');
   text.style.position = 'absolute';
-  text.style.width = 100 + "%";
-  text.style.zIndex= 100;
-  text.style.height = 100;
+  text.style.width = 300 + "px" ;
+  text.style.zIndex= 100 + "px";
+  text.style.height = 300 + "px";
   text.style.color = "white";
   text.style.fontFamily = "Impact";
   text.style.fontWeight = "bold";
-  text.style.fontSize = "xx-large";
+  text.style.fontSize = "xxx-large";
   text.style.fontStyle = "italic";
   text.innerHTML = "SCORE: 0";
-  text.style.top = 40 + 'px';
+  text.style.top = 60 + 'px';
   text.style.left = 40 + 'px';
 }
 
@@ -161,22 +164,44 @@ function init(argument)
           document.getElementById("container").appendChild(renderer.domElement);
           renderer.domElement.setAttribute("tabIndex","0");
           renderer.domElement.focus();
-         
+          renderer.shadowMap.enabled = true;  
+
+          listener = new THREE.AudioListener();
+          var audioLoader = new THREE.AudioLoader();
+
+          // create a global audio source
+          sound = new THREE.Audio( listener );
+
+        // load a sound and set it as the Audio object's buffer
+        var audioLoader = new THREE.AudioLoader();
+        audioLoader.load( 'sound/music.mp3', function( buffer ) {
+            sound.setBuffer( buffer );
+            sound.setLoop(true);
+            sound.setVolume(0.9);
+            sound.play();
+        });
+
+        document.documentElement.addEventListener(
+            "keydown", function(){
+                if(listener.context.state !== 'running')
+                    listener.context.resume()
+            })
         }
 
-        initPhysicWorld();
+        initPhysicWorld();  
         startVariable();
 
         scene = new THREE.Scene();
+
+        var luzAmbiente = new THREE.AmbientLight(0xFFFFFF, 0.55);
+        scene.add( luzAmbiente );
+
         camera = initCamera();
         var keyboard = initInput(renderer);
 
         var ar = window.innerWidth / window.innerHeight;
 
-        light = new THREE.AmbientLight( 0x404040, 4, 100000000);
-        light.position.copy(camera.position);
-        camera.add( light );
-
+    
         scene.add(camera);
 
         keyboard.domElement.addEventListener('keydown', function(event){
@@ -327,6 +352,19 @@ function loadScene()
         scene.add(car.visual);
     } );
 
+
+    luzFocal = new THREE.SpotLight(0xFFFFFF,0.8);
+    luzFocal.position.copy(camera.position);
+    luzFocal.position.z += 600;
+    luzFocal.target.position.copy(new THREE.Vector3(0,100000,0));
+    //luzFocal.angle = 40 * (Math.PI / 180);
+    luzFocal.penumbra = 0.5;
+    luzFocal.castShadow = true;
+ 
+    scene.add(luzFocal.target)
+    scene.add( luzFocal );
+    
+
     var texture = new THREE.TextureLoader().load( 'textures/start.png' );
     camera.position.set(-100000,-1000000,-10000);
     scene.background = texture;
@@ -334,6 +372,8 @@ function loadScene()
 
 function update()
 {
+    luzFocal.position.y = car.body.position.y - 2500;
+
     if(again)
     {
         var win_aux = win;
@@ -363,7 +403,7 @@ function update()
     else if(start)
     {
         var targetPosition = new THREE.Vector3(0,-5000, 150 );
-        light.position.copy(car.body.position);
+        //light.position.copy(car.body.position);
 
         if(!finishMove)
         {
@@ -383,10 +423,10 @@ function update()
                     car.body.velocity.y = 0;
                 }
         }
-
-        camera, renderer = updateAspectRatio(camera,renderer);
-        updatePhysics();
     }
+
+    camera, renderer = updateAspectRatio(camera,renderer);
+    updatePhysics();
 }
 
 function updateCoins()
@@ -476,7 +516,6 @@ function render()
 {
     requestAnimationFrame(render);
     update();
-
     renderer.clear();
 
     var size;
